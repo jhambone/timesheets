@@ -1,15 +1,14 @@
-from django.shortcuts import RequestContext, render_to_response
+from django.shortcuts import RequestContext, render_to_response, HttpResponseRedirect
 from TimeSheetApp.models import TimeSheetMain
 from TimeSheetApp.models import TimeSheetLine
 from TimeSheetApp.models import TimeSheetLineCell
 from TimeSheetApp.models import Employee
-
+from django.forms.formsets import formset_factory
 
 # Create your views here.
 from django.http import Http404
-
-
 from datetime import timedelta, date
+
 def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(n)
@@ -25,7 +24,6 @@ def time_page(request, result_name):
        end_Date_as_date = date(int(end.strftime("%Y")), int(end.strftime("%m")), int(end.strftime("%d")))
        rangeofdates = daterange(start_Date_as_date, end_Date_as_date)
 
-
        req_user = request.user
        recordsUser = records.user
 
@@ -39,13 +37,11 @@ def time_page(request, result_name):
             for c in timesheet_cell:
                 ts_cells.append(c)
 
-
           class TS_wrangler_line:
               def __init__(self, line):
                   self.timeSheet_line_code = line.timeSheet_line_code
                   self.taskOrder_number = line.taskOrder_number
                   self.cells = [] # To be initalized manually
-
 
           class TS_wrangler:
               def __init__(self, header, lines, cells):
@@ -70,9 +66,10 @@ def time_page(request, result_name):
                       #print sorted_cells,
                       res.cells = sorted_cells
                       self.lines.append(res)
-                  
+
           final_result = TS_wrangler(records, ts_lines, ts_cells)
 
+          saving(ts_cells, request)
 
           # final_result contains all of the timesheet information. Return this to the HTML
           print '\n'
@@ -86,15 +83,47 @@ def time_page(request, result_name):
                   print '\t\t ' + str(fcell.date) + ' \t ' + str(fcell.payType) + ' \t\t ' + str(fcell.hours) 
           print '\n'
 
-          
 
 
           return render_to_response('ts.html', {'records': records,
-                                                  'empID': empID,
-                                                  'rangeofdates': rangeofdates,
-                                                  'timesheet_line': ts_lines,
-                                                  'timesheet_cell': ts_cells,
-                                                  }, context_instance=RequestContext(request))
-       else:
-          raise Http404("404 - Not Active User")
+                                                 'empID': empID,
+                                                 'rangeofdates': rangeofdates,
+                                                 'final_result': final_result,
+                                                }, context_instance=RequestContext(request))
+        #  else:
+           #        raise Http404("404 - Not Active User")
 
+def saving(t,request):
+       if request.method == "POST":
+          for v in t:
+             v.save()
+       return HttpResponseRedirect("ts.html")
+
+
+
+
+
+
+
+
+
+def interview(request):
+    QuestionFormSet = formset_factory(QuestionForm, extra=5)
+    if request.method == "POST":
+        formset = QuestionFormSet(request.POST)
+
+        if(formset.is_valid()):
+            message = "Thank you"
+            for form in formset:
+                print form
+                form.save()
+        else:
+            message = "Something went wrong"
+
+        return render_to_response('contact/interview.html',
+                {'message': message},
+                context_instance=RequestContext(request))
+    else:
+        return render_to_response('contact/interview.html',
+                {'formset': QuestionFormSet()},
+                context_instance=RequestContext(request))

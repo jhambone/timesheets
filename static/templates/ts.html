@@ -12,11 +12,13 @@ FOR TESTING ONLY:
 					<nobr><span>img:Print &nbsp &nbsp img:Leave </span></nobr>
 					<br>
 					<br>
+
+					<br>
 					<nobr><span> Employee:  {{ user.last_name}}, {{ user.first_name }}</span></nobr>
 					<br>
 					Employee ID: {{ empID.employeeID }}
 					<br>
-					Class: {{empID.laborType}}
+					Class: {{ empID.laborType }}
 					<br>
 					Date Range: {{ records.startDate }} - {{ records.endDate }}
 					<br>
@@ -30,7 +32,7 @@ FOR TESTING ONLY:
 				<div class="col-md-1">
 				</div>
 				<div class="col-md-3">
-					 <span>Status:</span> {{records.status}}</span>
+					 <span>Status:</span> {{ records.status }} </span>
 				</div>
 			</div> 
 			<br>
@@ -59,41 +61,25 @@ FOR TESTING ONLY:
 						{% for x in rangeofdates %}
 							<th>{{ x|date:"D" }}<br>{{ x|date:"n/j" }}</th>
 						{% endfor %}
-						<th>
-						{{ records.endDate|date:"D" }}<br>{{ records.endDate|date:"n/j" }}
+						<th>{{ records.endDate|date:"D" }}<br>{{ records.endDate|date:"n/j" }}
 						</th>
-						{% for x in rangeofdates %}
-							<th>{{ x|date:"D" }}<br>{{ x|date:"n/j" }}</th>
-						{% endfor %}
 
 				</thead>
 
 				<tbody>
-
-					{% for r in timesheet_line %}
-					<tr>
-
-						{% for t in timesheet_cell %}
-						<td>
-							{{ t.type }}
-						</td>
-
-						<td>
-							{{ r.taskOrder_number }}
-						</td>
-						<td>
-							{{ r.unit }}
-						</td>
-
-
-						<td>
-							{{ t.hours }}
-						</td>
+						{% for x in final_result.lines  %}
+							<tr>
+								<td> {{ x.timeSheet_line_code }}</td>
+								<td> {{ x.taskOrder_number }}</td>
+								<td> {{ x.unit }}</td>
+								{% for g in x.cells %}
+									<td><div contenteditable="true"> <input type="text" name="hours" size="2" maxlength="4" value={{ g.hours }}> </div> </td>
+								{% endfor %}
+							</tr>
 						{% endfor %}
-					</tr>
-					{% endfor %}
-
-
+						<form action={{ records.timeSheet_code }} method="post" class="form-horizontal">
+							<button value="saving" class="btn btn-default">Save</button>
+						</form>
 				</tbody>
 				</table>
 		</div>
@@ -105,13 +91,9 @@ FOR TESTING ONLY:
 			<br>
 			<br>
 			<br>
-
 <div>
 
-
 </div>
-
-
 
 			<br>
 			<br>
@@ -140,19 +122,6 @@ FOR TESTING ONLY:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-{% endblock %}
-
 </tbody>
 </table>
 
@@ -160,6 +129,21 @@ FOR TESTING ONLY:
 
 
 
+
+
+
+
+<div>
+  <form action="/interview/" method="post">{% csrf_token %}
+    {{ formset.management_form }}
+
+    {% for form in formset %}
+      {{ form.as_p }}
+    {% endfor %}
+    <input type="submit" value="Submit Questions" />
+  </form>
+</div>
+{% endblock %}
 
 
 

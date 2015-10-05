@@ -5,7 +5,7 @@ from django.core.validators import RegexValidator
 
 
 class Department(models.Model):
-    dept_id   = models.CharField(max_length=15, blank=False, unique=True)
+    dept_id = models.CharField(max_length=15, blank=False, unique=True)
     dept_name = models.CharField(max_length=100, blank=False, unique=False)
 
     def __unicode__(self):
